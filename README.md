@@ -34,8 +34,8 @@ Implementation of VL-JEPA optimized for **NVIDIA Jetson Orin Nano (8GB)** with m
 
 ```bash
 # Clone repository
-git clone <your-repo-url>
-cd VL-JEPA-T1
+git clone https://github.com/mandarwagh9/vl-jepa-jetson.git
+cd vl-jepa-jetson
 
 # Run setup script
 python scripts/setup_jetson.py
