@@ -1,0 +1,79 @@
+# VL-JEPA Quick Test Configuration
+# For testing with 100 dummy images
+
+model:
+  vision_encoder:
+    type: "vit_tiny_patch16_224"
+    pretrained: true
+    hidden_dim: 192
+    gradient_checkpointing: false  # Disable for now
+  
+  text_encoder:
+    type: "distilbert-base-uncased"
+    hidden_dim: 768
+    projection_dim: 384
+    max_length: 32  # Reduced from 64
+    gradient_checkpointing: false  # Disable for now
+  
+  predictor:
+    type: "mlp"
+    input_dim: 192
+    hidden_dim: 256
+    output_dim: 192
+    num_layers: 3
+  
+  embedding_dim: 256
+  temperature: 0.07
+
+training:
+  batch_size: 1  # Reduced from 2
+  gradient_accumulation_steps: 8  # Increased to compensate
+  num_epochs: 5  # Quick test
+  
+  learning_rate: 1.0e-4
+  weight_decay: 0.05
+  warmup_epochs: 1
+  min_lr: 1.0e-6
+  
+  optimizer:
+    type: "adamw"  # Standard AdamW (8-bit may not work on ARM)
+    betas: [0.9, 0.999]
+  
+  scheduler:
+    type: "cosine"
+  
+  mixed_precision: "fp16"
+  gradient_clip: 1.0
+  
+  ema_momentum_start: 0.996
+  ema_momentum_end: 1.0
+  
+  jepa_loss_weight: 1.0
+  contrastive_loss_weight: 0.0  # Disable for quick test
+  
+  empty_cache_every: 50
+  save_every: 2
+  checkpoint_dir: "checkpoints"
+
+data:
+  dataset_name: "coco_captions"
+  data_root: "./data"
+  train_split: "train"
+  max_samples: 100  # Use our 100 test images
+  
+  num_workers: 0  # Reduced to save memory
+  pin_memory: false  # Disable to save memory
+  persistent_workers: false
+  
+  masking:
+    num_context_blocks: 1
+    context_scale: [0.85, 1.0]
+    num_target_blocks: 4
+    target_scale: [0.15, 0.2]
+
+logging:
+  log_every: 5
+  log_dir: "logs"
+  tensorboard_dir: "runs"
+  use_wandb: false
+  project_name: "vl-jepa-test"

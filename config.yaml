@@ -1,0 +1,154 @@
+# VL-JEPA Configuration for Jetson Orin Nano (8GB Memory)
+
+model:
+  vision_encoder:
+    type: "vit_tiny_patch16_224"
+    pretrained: true  # Use ImageNet pretrained weights
+    hidden_dim: 192
+    num_layers: 12
+    num_heads: 3
+    patch_size: 16
+    image_size: 224
+    mlp_ratio: 4.0
+    dropout: 0.0
+    attention_dropout: 0.0
+    drop_path_rate: 0.0
+    qkv_bias: true
+    gradient_checkpointing: true  # Essential for memory
+  
+  text_encoder:
+    type: "distilbert-base-uncased"
+    hidden_dim: 768
+    projection_dim: 384  # Project down to match vision
+    max_length: 128
+    dropout: 0.1
+    gradient_checkpointing: true
+  
+  predictor:
+    type: "mlp"  # Simple MLP predictor
+    input_dim: 192  # From ViT-Tiny
+    hidden_dim: 256
+    output_dim: 192
+    num_layers: 3
+    dropout: 0.1
+    use_layer_norm: true
+  
+  embedding_dim: 256  # Shared embedding space for contrastive learning
+  temperature: 0.07  # For contrastive loss
+
+training:
+  # Batch configuration
+  batch_size: 2  # Per device (Jetson)
+  gradient_accumulation_steps: 8  # Effective batch = 16
+  num_epochs: 100
+  
+  # Optimizer
+  learning_rate: 1.0e-4
+  weight_decay: 0.05
+  warmup_epochs: 10
+  warmup_steps: null  # Will be calculated from dataset size
+  min_lr: 1.0e-6
+  
+  optimizer:
+    type: "adamw8bit"  # Use 8-bit AdamW from bitsandbytes
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+  
+  scheduler:
+    type: "cosine"
+    warmup_type: "linear"
+  
+  # Mixed precision
+  mixed_precision: "fp16"  # Essential for Jetson
+  gradient_clip: 1.0
+  
+  # EMA for target encoder
+  ema_momentum_start: 0.996
+  ema_momentum_end: 1.0
+  
+  # Loss weights
+  jepa_loss_weight: 1.0
+  contrastive_loss_weight: 0.5  # Optional contrastive loss
+  
+  # Memory management
+  empty_cache_every: 100  # Clear CUDA cache every N steps
+  
+  # Checkpointing
+  save_every: 5  # Save every N epochs
+  checkpoint_dir: "checkpoints"
+  resume_from: null
+
+data:
+  # Dataset
+  dataset_name: "coco_captions"
+  data_root: "./data"
+  train_split: "train"
+  val_split: "val"
+  max_samples: 50000  # Limit dataset size for Jetson
+  
+  # DataLoader
+  num_workers: 2
+  pin_memory: true
+  prefetch_factor: 2
+  persistent_workers: true
+  
+  # Image transforms
+  image_transforms:
+    resize: 256
+    random_resized_crop: 224
+    random_crop_scale: [0.2, 1.0]
+    random_crop_ratio: [0.75, 1.333]
+    horizontal_flip: 0.5
+    color_jitter:
+      brightness: 0.4
+      contrast: 0.4
+      saturation: 0.4
+      hue: 0.1
+    gaussian_blur:
+      kernel_size: 23
+      sigma: [0.1, 2.0]
+      p: 0.5
+    normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  
+  # Masking strategy (JEPA-style)
+  masking:
+    # Context blocks (what we see)
+    num_context_blocks: 1
+    context_scale: [0.85, 1.0]
+    context_aspect_ratio: [1.0, 1.0]
+    
+    # Target blocks (what we predict)
+    num_target_blocks: 4
+    target_scale: [0.15, 0.2]
+    target_aspect_ratio: [0.75, 1.5]
+    
+    # Constraints
+    allow_overlap: false
+    min_keep: 10
+
+logging:
+  use_wandb: true
+  wandb_project: "vl-jepa-jetson"
+  wandb_entity: null
+  log_every: 10
+  log_images_every: 100
+  
+  use_tensorboard: true
+  tensorboard_dir: "runs"
+
+jetson:
+  # Jetson-specific optimizations
+  power_mode: "15W"  # Or "7W" for lower power
+  enable_cudnn_benchmark: true
+  max_memory_allocated: "6GB"
+  
+  # TensorRT (for inference)
+  tensorrt:
+    enabled: false  # Enable for inference optimization
+    precision: "fp16"
+    workspace_size: "2GB"
+    calibration_batches: 100
+
+seed: 42
