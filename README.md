@@ -1,6 +1,12 @@
 # VL-JEPA: Vision-Language Joint Embedding Predictive Architecture
 
+[![GitHub](https://img.shields.io/badge/GitHub-vl--jepa--jetson-blue?logo=github)](https://github.com/mandarwagh9/vl-jepa-jetson)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Jetson](https://img.shields.io/badge/NVIDIA-Jetson%20Orin%20Nano-76B900?logo=nvidia)](https://developer.nvidia.com/embedded/jetson-orin-nano)
+
 Implementation of VL-JEPA optimized for **NVIDIA Jetson Orin Nano (8GB)** with memory-efficient training using FP16, gradient checkpointing, and 8-bit optimizers.
+
+**🔗 Repository**: https://github.com/mandarwagh9/vl-jepa-jetson
 
 ## 🚀 Features
 
