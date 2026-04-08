@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Jetson](https://img.shields.io/badge/NVIDIA-Jetson%20Orin%20Nano-76B900?logo=nvidia)](https://developer.nvidia.com/embedded/jetson-orin-nano)
 
-This is a fork of the **Implementation of VL-JEPA optimized for **NVIDIA Jetson Orin Nano (8GB)** with memory-efficient training using FP16, gradient checkpointing, and 8-bit optimizers. In this fork, missing files from the data module are added. The missing data module is generated
+This is a fork of the "Implementation of VL-JEPA optimized for **NVIDIA Jetson Orin Nano (8GB)** with memory-efficient training using FP16, gradient checkpointing, and 8-bit optimizers". In this fork, missing files from the data module are added. The missing data module is generated
 by Gemini 3.1 Pro.
 
 
