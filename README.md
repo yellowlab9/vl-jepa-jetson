@@ -8,7 +8,7 @@ This is a fork of the **Implementation of VL-JEPA optimized for **NVIDIA Jetson 
 by Gemini 3.1 Pro.
 
 
-**🔗 Original repository**: https://github.com/mandarwagh9/vl-jepa-jetson
+**🔗 Original repository**: https://github.com/mandarwagh9/vl-jepa-jetson   
 **🔗 Repository with missing data module added**: https://github.com/yellowlab9/vl-jepa-jetson
 
 ## 🚀 Features
