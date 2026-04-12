@@ -5,13 +5,12 @@ Logging utilities
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
-from datetime import datetime
+from typing import Optional, Union
 
 
 def setup_logger(
     name: str = "vl_jepa",
-    log_file: Optional[str] = None,
+    log_file: Optional[Union[str, Path]] = None,
     level: int = logging.INFO,
     format_str: Optional[str] = None,
 ) -> logging.Logger:

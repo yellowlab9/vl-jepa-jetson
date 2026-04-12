@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from PIL import Image
 import argparse
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple, Union, Optional, Sequence
 
 from vl_jepa.models.vl_jepa import create_vl_jepa_model
 from vl_jepa.data.transforms import get_val_transforms
@@ -23,8 +23,8 @@ class VLJEPAInference:
     
     def __init__(
         self,
-        config_path: str,
-        checkpoint_path: str,
+        config_path: Union[str, Path],
+        checkpoint_path: Union[str, Path],
         device: str = 'cuda',
     ):
         """
@@ -61,7 +61,7 @@ class VLJEPAInference:
         print("Model loaded successfully!")
     
     @torch.no_grad()
-    def encode_image(self, image_path: str) -> torch.Tensor:
+    def encode_image(self, image_path: Union[str, Path]) -> torch.Tensor:
         """
         Encode image to embedding.
         
@@ -125,7 +125,7 @@ class VLJEPAInference:
     @torch.no_grad()
     def compute_similarity(
         self,
-        image_path: str,
+        image_path: Union[str, Path],
         text: str,
     ) -> float:
         """
@@ -148,15 +148,15 @@ class VLJEPAInference:
     @torch.no_grad()
     def find_best_text(
         self,
-        image_path: str,
-        texts: List[str],
-    ) -> Tuple[str, float]:
+        image_path: Union[str, Path],
+        texts: Sequence[str],
+    ) -> Tuple[Optional[str], float]:
         """
         Find best matching text for an image.
         
         Args:
             image_path: Path to image
-            texts: List of candidate texts
+            texts: Sequence of candidate texts
             
         Returns:
             (best_text, similarity_score)
@@ -180,14 +180,14 @@ class VLJEPAInference:
     def find_best_image(
         self,
         text: str,
-        image_paths: List[str],
-    ) -> Tuple[str, float]:
+        image_paths: Sequence[Union[str, Path]],
+    ) -> Tuple[Optional[Union[str, Path]], float]:
         """
         Find best matching image for a text.
         
         Args:
             text: Text query
-            image_paths: List of candidate image paths
+            image_paths: Sequence of candidate image paths
             
         Returns:
             (best_image_path, similarity_score)
@@ -286,7 +286,7 @@ def main():
             return
         
         print(f"Searching {len(image_paths)} images...")
-        best_image, score = model.find_best_image(args.text, [str(p) for p in image_paths])
+        best_image, score = model.find_best_image(args.text, image_paths)
         
         print(f"\nText query: {args.text}")
         print(f"Best matching image: {best_image}")

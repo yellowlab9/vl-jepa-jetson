@@ -4,8 +4,9 @@ Checkpoint management utilities
 
 import torch
 import torch.nn as nn
+import torch.optim
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Union
 import json
 
 
@@ -17,7 +18,7 @@ def save_checkpoint(
     global_step: int,
     best_metric: float,
     config: Dict,
-    save_path: str,
+    save_path: Union[str, Path],
     is_best: bool = False,
 ):
     """
@@ -34,8 +35,8 @@ def save_checkpoint(
         save_path: Path to save checkpoint
         is_best: Whether this is the best model
     """
-    save_path = Path(save_path)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(save_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     
     # Prepare checkpoint
     checkpoint = {
@@ -49,23 +50,23 @@ def save_checkpoint(
     }
     
     # Save checkpoint
-    torch.save(checkpoint, save_path)
-    print(f"Checkpoint saved to {save_path}")
+    torch.save(checkpoint, path)
+    print(f"Checkpoint saved to {path}")
     
     # Save best model separately
     if is_best:
-        best_path = save_path.parent / 'best_model.pth'
+        best_path = path.parent / 'best_model.pth'
         torch.save(checkpoint, best_path)
         print(f"Best model saved to {best_path}")
     
     # Save config as JSON
-    config_path = save_path.parent / 'config.json'
-    with open(config_path, 'w') as f:
+    config_json_path = path.parent / 'config.json'
+    with open(config_json_path, 'w') as f:
         json.dump(config, f, indent=2)
 
 
 def load_checkpoint(
-    checkpoint_path: str,
+    checkpoint_path: Union[str, Path],
     model: nn.Module,
     optimizer: Optional[torch.optim.Optimizer] = None,
     scheduler: Optional[Any] = None,
@@ -84,13 +85,13 @@ def load_checkpoint(
     Returns:
         Dictionary with checkpoint info (epoch, step, etc.)
     """
-    checkpoint_path = Path(checkpoint_path)
+    path = Path(checkpoint_path)
     
-    if not checkpoint_path.exists():
-        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+    if not path.exists():
+        raise FileNotFoundError(f"Checkpoint not found: {path}")
     
-    print(f"Loading checkpoint from {checkpoint_path}...")
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    print(f"Loading checkpoint from {path}...")
+    checkpoint = torch.load(path, map_location=device)
     
     # Load model weights
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -119,7 +120,7 @@ def load_checkpoint(
     return info
 
 
-def save_model_only(model: nn.Module, save_path: str):
+def save_model_only(model: nn.Module, save_path: Union[str, Path]):
     """
     Save only model weights (for inference/deployment).
     
@@ -127,14 +128,14 @@ def save_model_only(model: nn.Module, save_path: str):
         model: Model to save
         save_path: Path to save model
     """
-    save_path = Path(save_path)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(save_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     
-    torch.save(model.state_dict(), save_path)
-    print(f"Model weights saved to {save_path}")
+    torch.save(model.state_dict(), path)
+    print(f"Model weights saved to {path}")
 
 
-def load_model_only(model: nn.Module, checkpoint_path: str, device: str = 'cuda'):
+def load_model_only(model: nn.Module, checkpoint_path: Union[str, Path], device: str = 'cuda'):
     """
     Load only model weights.
     
@@ -143,14 +144,14 @@ def load_model_only(model: nn.Module, checkpoint_path: str, device: str = 'cuda'
         checkpoint_path: Path to checkpoint file
         device: Device to load to
     """
-    checkpoint_path = Path(checkpoint_path)
+    path = Path(checkpoint_path)
     
-    if not checkpoint_path.exists():
-        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+    if not path.exists():
+        raise FileNotFoundError(f"Checkpoint not found: {path}")
     
-    state_dict = torch.load(checkpoint_path, map_location=device)
+    state_dict = torch.load(path, map_location=device)
     model.load_state_dict(state_dict)
-    print(f"Model weights loaded from {checkpoint_path}")
+    print(f"Model weights loaded from {path}")
 
 
 if __name__ == "__main__":

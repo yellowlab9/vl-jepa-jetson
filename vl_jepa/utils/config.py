@@ -4,11 +4,11 @@ Configuration management utilities
 
 import yaml
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Union, cast
 from omegaconf import OmegaConf
 
 
-def load_config(config_path: str) -> Dict[str, Any]:
+def load_config(config_path: Union[str, Path]) -> Dict[str, Any]:
     """
     Load configuration from YAML file.
     
@@ -18,18 +18,18 @@ def load_config(config_path: str) -> Dict[str, Any]:
     Returns:
         Configuration dictionary
     """
-    config_path = Path(config_path)
+    path = Path(config_path)
     
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
+    if not path.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
     
-    with open(config_path, 'r') as f:
+    with open(path, 'r') as f:
         config = yaml.safe_load(f)
     
     return config
 
 
-def save_config(config: Dict[str, Any], save_path: str):
+def save_config(config: Dict[str, Any], save_path: Union[str, Path]):
     """
     Save configuration to YAML file.
     
@@ -37,16 +37,16 @@ def save_config(config: Dict[str, Any], save_path: str):
         config: Configuration dictionary
         save_path: Path to save config
     """
-    save_path = Path(save_path)
-    save_path.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(save_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     
-    with open(save_path, 'w') as f:
+    with open(path, 'w') as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
     
-    print(f"Config saved to {save_path}")
+    print(f"Config saved to {path}")
 
 
-def merge_configs(base_config: Dict, override_config: Dict) -> Dict:
+def merge_configs(base_config: Dict[str, Any], override_config: Dict[str, Any]) -> Dict[str, Any]:
     """
     Merge two configurations, with override taking precedence.
     
@@ -61,7 +61,7 @@ def merge_configs(base_config: Dict, override_config: Dict) -> Dict:
     override_omega = OmegaConf.create(override_config)
     merged = OmegaConf.merge(base_omega, override_omega)
     
-    return OmegaConf.to_container(merged, resolve=True)
+    return cast(Dict[str, Any], OmegaConf.to_container(merged, resolve=True))
 
 
 def print_config(config: Dict[str, Any], indent: int = 0):

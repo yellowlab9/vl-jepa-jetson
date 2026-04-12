@@ -6,13 +6,22 @@ Combines vision encoder, text encoder, and predictor with EMA target encoder
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 import copy
 
 from .vision_encoder import VisionEncoder
 from .text_encoder import TextEncoder
 from .predictor import PredictorMLP, PredictorWithCrossAttention
 
+
+__all__ = [
+    "VLJEPAModel",
+    "create_vl_jepa_model",
+    "VisionEncoder",
+    "TextEncoder",
+    "PredictorMLP",
+    "PredictorWithCrossAttention",
+]
 
 class VLJEPAModel(nn.Module):
     """

@@ -5,6 +5,7 @@ Optimized for low memory with FP16, gradient accumulation, and 8-bit AdamW
 
 import torch
 import torch.nn as nn
+import torch.optim
 from torch.utils.data import DataLoader
 from torch.cuda.amp import autocast, GradScaler
 import argparse
@@ -12,7 +13,7 @@ from pathlib import Path
 import time
 from tqdm import tqdm
 import wandb
-from typing import Optional, Dict
+from typing import Dict
 
 # Import VL-JEPA components
 from vl_jepa.models.vl_jepa import create_vl_jepa_model
@@ -20,15 +21,16 @@ from vl_jepa.data.dataset import create_dataset
 from vl_jepa.data.transforms import get_train_transforms, get_val_transforms
 from vl_jepa.data.collate import jepa_collate_fn
 from vl_jepa.masks.multiblock import create_mask_generator
-from vl_jepa.utils.config import load_config, save_config, print_config
+from vl_jepa.utils.config import load_config, print_config
 from vl_jepa.utils.logger import setup_logger
 from vl_jepa.utils.checkpoint import save_checkpoint, load_checkpoint
 from vl_jepa.utils.metrics import AverageMeter, compute_retrieval_metrics
 
 try:
-    import bitsandbytes as bnb
+    from bitsandbytes.optim import AdamW8bit  # type: ignore
     HAS_BITSANDBYTES = True
 except ImportError:
+    AdamW8bit = None
     HAS_BITSANDBYTES = False
     print("Warning: bitsandbytes not found. Using standard AdamW.")
 
@@ -52,8 +54,8 @@ def create_optimizer(model: nn.Module, config: Dict) -> torch.optim.Optimizer:
     betas = tuple(opt_config.get('betas', [0.9, 0.999]))
     eps = opt_config.get('eps', 1e-8)
     
-    if opt_type == 'adamw8bit' and HAS_BITSANDBYTES:
-        optimizer = bnb.optim.AdamW8bit(
+    if opt_type == 'adamw8bit' and HAS_BITSANDBYTES and AdamW8bit is not None:
+        optimizer = AdamW8bit(
             model.parameters(),
             lr=lr,
             betas=betas,
